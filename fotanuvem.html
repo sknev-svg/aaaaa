@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FotaNuvem — Suas fotos, sempre com você</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0F0F14;
+    --surface: #17171F;
+    --surface2: #1E1E2A;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.14);
+    --accent: #7B68EE;
+    --accent2: #9D8FFF;
+    --accent-glow: rgba(123,104,238,0.18);
+    --text: #F0EFF8;
+    --text2: #9B9AB0;
+    --text3: #5E5D75;
+    --danger: #E2544A;
+    --success: #3BAD7A;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* HEADER */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2rem;
+    height: 60px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .logo-icon {
+    width: 32px;
+    height: 32px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+  }
+
+  .header-stats {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    font-size: 13px;
+    color: var(--text2);
+  }
+
+  .stat-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 5px 12px;
+    border-radius: 100px;
+  }
+
+  .stat-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent2);
+  }
+
+  /* MAIN LAYOUT */
+  .app-body {
+    display: flex;
+    flex: 1;
+  }
+
+  /* SIDEBAR */
+  aside {
+    width: 220px;
+    flex-shrink: 0;
+    border-right: 1px solid var(--border);
+    padding: 1.5rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .nav-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    color: var(--text3);
+    text-transform: uppercase;
+    padding: 0 8px;
+    margin: 12px 0 6px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.15s;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+  }
+
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: var(--accent-glow); color: var(--accent2); }
+
+  .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+  .storage-bar-wrap {
+    margin-top: auto;
+    padding: 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  .storage-label {
+    font-size: 12px;
+    color: var(--text2);
+    margin-bottom: 8px;
+  }
+
+  .storage-bar {
+    height: 4px;
+    background: var(--border2);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .storage-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  .storage-nums {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text3);
+    margin-top: 6px;
+  }
+
+  /* MAIN CONTENT */
+  main {
+    flex: 1;
+    padding: 2rem;
+    overflow-y: auto;
+  }
+
+  /* UPLOAD ZONE */
+  .upload-zone {
+    border: 1.5px dashed var(--border2);
+    border-radius: var(--radius);
+    padding: 2.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 2rem;
+    position: relative;
+  }
+
+  .upload-zone:hover, .upload-zone.drag-over {
+    border-color: var(--accent);
+    background: var(--accent-glow);
+  }
+
+  .upload-zone input[type="file"] {
+    position: absolute; inset: 0;
+    opacity: 0; cursor: pointer; width: 100%;
+  }
+
+  .upload-icon {
+    width: 48px; height: 48px;
+    margin: 0 auto 1rem;
+    background: var(--surface2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .upload-icon svg { width: 24px; height: 24px; color: var(--accent2); }
+
+  .upload-zone h3 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+
+  .upload-zone p {
+    font-size: 13px;
+    color: var(--text2);
+  }
+
+  /* TOOLBAR */
+  .toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1rem;
+    font-weight: 500;
+  }
+
+  .count-badge {
+    font-size: 12px;
+    background: var(--surface2);
+    color: var(--text2);
+    padding: 2px 8px;
+    border-radius: 100px;
+    border: 1px solid var(--border);
+  }
+
+  .toolbar-right {
+    display: flex;
+    gap: 8px;
+  }
+
+  .btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text2);
+    font-family: inherit;
+  }
+
+  .btn:hover { border-color: var(--border2); color: var(--text); }
+  .btn svg { width: 14px; height: 14px; }
+
+  .btn-danger { color: var(--danger); border-color: rgba(226,84,74,0.3); }
+  .btn-danger:hover { background: rgba(226,84,74,0.1); color: var(--danger); }
+
+  .view-toggle {
+    display: flex;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+  }
+
+  .view-btn {
+    padding: 7px 10px;
+    background: var(--surface);
+    border: none;
+    color: var(--text3);
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+  }
+
+  .view-btn svg { width: 14px; height: 14px; }
+  .view-btn:hover { color: var(--text2); background: var(--surface2); }
+  .view-btn.active { color: var(--accent2); background: var(--accent-glow); }
+
+  /* SEARCH */
+  .search-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 7px 12px;
+    width: 200px;
+    transition: border-color 0.15s;
+  }
+
+  .search-bar:focus-within { border-color: var(--accent); }
+  .search-bar svg { width: 14px; height: 14px; color: var(--text3); flex-shrink: 0; }
+
+  .search-bar input {
+    background: none;
+    border: none;
+    outline: none;
+    font-size: 13px;
+    color: var(--text);
+    font-family: inherit;
+    width: 100%;
+  }
+
+  .search-bar input::placeholder { color: var(--text3); }
+
+  /* PHOTO GRID */
+  .photo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+  }
+
+  .photo-grid.list-view {
+    grid-template-columns: 1fr;
+  }
+
+  .photo-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.15s, transform 0.15s;
+    position: relative;
+    group: true;
+  }
+
+  .photo-card:hover {
+    border-color: var(--border2);
+    transform: translateY(-2px);
+  }
+
+  .photo-card.selected {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent);
+  }
+
+  .photo-thumb {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    display: block;
+    background: var(--surface2);
+  }
+
+  .photo-grid.list-view .photo-thumb {
+    width: 52px;
+    height: 52px;
+    aspect-ratio: unset;
+    border-radius: var(--radius-sm);
+    flex-shrink: 0;
+  }
+
+  .photo-grid.list-view .photo-card {
+    display: flex;
+    align-items: center;
+    padding: 10px 14px;
+    gap: 14px;
+  }
+
+  .photo-info {
+    padding: 10px 12px;
+  }
+
+  .photo-grid.list-view .photo-info {
+    padding: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .photo-name {
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .photo-meta {
+    font-size: 11px;
+    color: var(--text3);
+    margin-top: 2px;
+  }
+
+  .photo-actions {
+    position: absolute;
+    top: 8px; right: 8px;
+    display: flex;
+    gap: 6px;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  .photo-card:hover .photo-actions { opacity: 1; }
+
+  .photo-grid.list-view .photo-actions {
+    position: static;
+    opacity: 1;
+    margin-left: auto;
+  }
+
+  .icon-btn {
+    width: 28px; height: 28px;
+    border-radius: var(--radius-sm);
+    border: none;
+    background: rgba(15,15,20,0.7);
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s;
+    backdrop-filter: blur(4px);
+  }
+
+  .icon-btn:hover { background: rgba(226,84,74,0.7); }
+  .icon-btn svg { width: 13px; height: 13px; }
+
+  .select-check {
+    position: absolute;
+    top: 8px; left: 8px;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.5);
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .photo-card.selected .select-check {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center;
+    padding: 5rem 2rem;
+    color: var(--text3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .empty-icon {
+    width: 64px; height: 64px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .empty-icon svg { width: 28px; height: 28px; color: var(--text3); }
+  .empty-state h3 { font-size: 1rem; color: var(--text2); font-weight: 500; }
+  .empty-state p { font-size: 13px; }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 200;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 16px;
+    max-width: 700px;
+    width: 100%;
+    max-height: 90vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .modal-title { font-size: 14px; font-weight: 500; }
+  .modal-close {
+    width: 28px; height: 28px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text2);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .modal-close:hover { color: var(--text); }
+  .modal-close svg { width: 14px; height: 14px; }
+
+  .modal-img {
+    width: 100%;
+    max-height: 500px;
+    object-fit: contain;
+    background: var(--bg);
+  }
+
+  .modal-info {
+    padding: 1rem 1.25rem;
+    display: flex;
+    gap: 1.5rem;
+    font-size: 13px;
+    color: var(--text2);
+  }
+
+  .modal-info span { display: flex; align-items: center; gap: 6px; }
+  .modal-info svg { width: 14px; height: 14px; }
+
+  /* TOAST */
+  #toast {
+    position: fixed;
+    bottom: 2rem; right: 2rem;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    font-size: 13px;
+    z-index: 300;
+    display: none;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+
+  #toast.show { display: flex; }
+  #toast.success { border-color: rgba(59,173,122,0.4); color: var(--success); }
+  #toast.error { border-color: rgba(226,84,74,0.4); color: var(--danger); }
+
+  /* LOADING */
+  .spinner {
+    width: 14px; height: 14px;
+    border: 2px solid var(--border2);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    flex-shrink: 0;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* UPLOAD PROGRESS */
+  .upload-progress {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+    display: none;
+  }
+
+  .upload-progress.visible { display: block; }
+  .progress-label { font-size: 13px; color: var(--text2); margin-bottom: 8px; }
+  .progress-bar { height: 3px; background: var(--border2); border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 2px; transition: width 0.3s; }
+
+  /* RESPONSIVE */
+  @media (max-width: 640px) {
+    aside { display: none; }
+    .search-bar { width: 140px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2C9.38 2 7.25 4.13 7.25 6.75c0 .24.02.47.05.7A5.25 5.25 0 0 0 3 12.5c0 2.9 2.35 5.25 5.25 5.25h7.5C18.65 17.75 21 15.4 21 12.5a5.24 5.24 0 0 0-5.25-5.25c0-2.62-1.65-5.25-3.75-5.25z"/>
+      </svg>
+    </div>
+    FotaNuvem
+  </div>
+  <div class="header-stats">
+    <div class="stat-pill">
+      <div class="stat-dot"></div>
+      <span id="header-count">0 fotos</span>
+    </div>
+  </div>
+</header>
+
+<div class="app-body">
+  <aside>
+    <span class="nav-label">Biblioteca</span>
+    <button class="nav-item active" onclick="filterView('all')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Todas as fotos
+    </button>
+    <button class="nav-item" onclick="filterView('recent')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Recentes
+    </button>
+
+    <span class="nav-label">Organização</span>
+    <button class="nav-item" onclick="toast('Em breve: organize por álbuns!', 'success')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+      Álbuns
+    </button>
+
+    <div class="storage-bar-wrap" style="margin-top: auto;">
+      <div class="storage-label">Armazenamento</div>
+      <div class="storage-bar">
+        <div class="storage-fill" id="storage-fill" style="width: 0%"></div>
+      </div>
+      <div class="storage-nums">
+        <span id="storage-used">0 MB</span>
+        <span>5 GB</span>
+      </div>
+    </div>
+  </aside>
+
+  <main>
+    <!-- UPLOAD ZONE -->
+    <div class="upload-zone" id="upload-zone">
+      <input type="file" id="file-input" accept="image/*" multiple>
+      <div class="upload-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
+          <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
+        </svg>
+      </div>
+      <h3>Arraste fotos ou clique para enviar</h3>
+      <p>Suporte a JPG, PNG, WEBP, HEIC · Múltiplos arquivos permitidos</p>
+    </div>
+
+    <!-- UPLOAD PROGRESS -->
+    <div class="upload-progress" id="upload-progress">
+      <div class="progress-label" id="progress-label">Salvando fotos...</div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width: 0%"></div></div>
+    </div>
+
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <span class="section-title">Galeria</span>
+        <span class="count-badge" id="photo-count">0 fotos</span>
+      </div>
+      <div class="toolbar-right">
+        <div class="search-bar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="search-input" placeholder="Buscar fotos...">
+        </div>
+        <div class="view-toggle">
+          <button class="view-btn active" id="grid-btn" onclick="setView('grid')" title="Grade">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          </button>
+          <button class="view-btn" id="list-btn" onclick="setView('list')" title="Lista">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          </button>
+        </div>
+        <button class="btn btn-danger" id="delete-sel-btn" style="display:none" onclick="deleteSelected()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+          Apagar selecionadas
+        </button>
+      </div>
+    </div>
+
+    <!-- GALLERY -->
+    <div class="photo-grid" id="photo-grid"></div>
+
+    <!-- EMPTY STATE -->
+    <div class="empty-state" id="empty-state">
+      <div class="empty-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+          <polyline points="21 15 16 10 5 21"/>
+        </svg>
+      </div>
+      <h3>Nenhuma foto ainda</h3>
+      <p>Arraste imagens para a área acima para começar</p>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-title">—</span>
+      <button class="modal-close" onclick="document.getElementById('modal').classList.remove('open')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <img class="modal-img" id="modal-img" src="" alt="">
+    <div class="modal-info">
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span id="modal-size"></span></span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span id="modal-date"></span></span>
+      <span><a id="modal-download" href="#" download style="color:var(--accent2); text-decoration:none; display:flex; align-items:center; gap:6px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Baixar
+      </a></span>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast">
+  <div class="spinner" id="toast-spinner"></div>
+  <span id="toast-msg"></span>
+</div>
+
+<script>
+// ---- STATE ----
+let photos = [];
+let currentView = 'grid';
+let selectedIds = new Set();
+let filterMode = 'all';
+const MAX_STORAGE_MB = 5000;
+const DB_KEY = 'fotanuvem_photos';
+
+// ---- STORAGE ----
+const DB = {
+  async load() {
+    try {
+      const raw = localStorage.getItem(DB_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch { return []; }
+  },
+  async save(data) {
+    try {
+      localStorage.setItem(DB_KEY, JSON.stringify(data));
+      return true;
+    } catch(e) {
+      toast('Armazenamento cheio ou erro ao salvar.', 'error');
+      return false;
+    }
+  }
+};
+
+// ---- INIT ----
+async function init() {
+  photos = await DB.load();
+  renderGallery();
+  updateStats();
+}
+
+// ---- FILE UPLOAD ----
+const fileInput = document.getElementById('file-input');
+const uploadZone = document.getElementById('upload-zone');
+
+fileInput.addEventListener('change', e => handleFiles(e.target.files));
+
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault();
+  uploadZone.classList.remove('drag-over');
+  handleFiles(e.dataTransfer.files);
+});
+
+async function handleFiles(files) {
+  const imgs = Array.from(files).filter(f => f.type.startsWith('image/'));
+  if (!imgs.length) return;
+
+  const prog = document.getElementById('upload-progress');
+  const fill = document.getElementById('progress-fill');
+  const label = document.getElementById('progress-label');
+  prog.classList.add('visible');
+
+  for (let i = 0; i < imgs.length; i++) {
+    const f = imgs[i];
+    label.textContent = `Salvando ${i + 1} de ${imgs.length}: ${f.name}`;
+    fill.style.width = ((i / imgs.length) * 100) + '%';
+
+    const dataUrl = await readFileAsDataURL(f);
+    const photo = {
+      id: Date.now() + '_' + Math.random().toString(36).slice(2),
+      name: f.name,
+      size: f.size,
+      type: f.type,
+      date: new Date().toISOString(),
+      data: dataUrl
+    };
+    photos.unshift(photo);
+  }
+
+  fill.style.width = '100%';
+  label.textContent = 'Salvo com sucesso!';
+  await DB.save(photos);
+
+  setTimeout(() => { prog.classList.remove('visible'); fill.style.width = '0%'; }, 1200);
+
+  renderGallery();
+  updateStats();
+  toast(`${imgs.length} foto${imgs.length > 1 ? 's' : ''} salva${imgs.length > 1 ? 's' : ''}!`, 'success');
+  fileInput.value = '';
+}
+
+function readFileAsDataURL(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = e => res(e.target.result);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+}
+
+// ---- RENDER ----
+function getFilteredPhotos() {
+  let list = [...photos];
+  const q = document.getElementById('search-input').value.toLowerCase().trim();
+  if (q) list = list.filter(p => p.name.toLowerCase().includes(q));
+  if (filterMode === 'recent') {
+    const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    list = list.filter(p => new Date(p.date).getTime() > cutoff);
+  }
+  return list;
+}
+
+function renderGallery() {
+  const grid = document.getElementById('photo-grid');
+  const empty = document.getElementById('empty-state');
+  const filtered = getFilteredPhotos();
+
+  document.getElementById('photo-count').textContent = `${filtered.length} foto${filtered.length !== 1 ? 's' : ''}`;
+
+  if (!filtered.length) {
+    grid.innerHTML = '';
+    empty.style.display = 'flex';
+    return;
+  }
+  empty.style.display = 'none';
+
+  grid.innerHTML = filtered.map(p => {
+    const sel = selectedIds.has(p.id);
+    const kb = p.size < 1024 * 1024 ? (p.size / 1024).toFixed(0) + ' KB' : (p.size / 1024 / 1024).toFixed(1) + ' MB';
+    const dateStr = new Date(p.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+
+    if (currentView === 'list') {
+      return `
+        <div class="photo-card${sel ? ' selected' : ''}" data-id="${p.id}">
+          <img class="photo-thumb" src="${p.data}" alt="${p.name}" onclick="openModal('${p.id}')">
+          <div class="photo-info">
+            <div class="photo-name">${p.name}</div>
+            <div class="photo-meta">${kb} · ${dateStr}</div>
+          </div>
+          <div class="photo-actions">
+            <button class="icon-btn" title="Remover" onclick="deletePhoto('${p.id}', event)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>
+            </button>
+          </div>
+        </div>`;
+    }
+
+    return `
+      <div class="photo-card${sel ? ' selected' : ''}" data-id="${p.id}">
+        <img class="photo-thumb" src="${p.data}" alt="${p.name}" onclick="openModal('${p.id}')">
+        <div class="select-check" onclick="toggleSelect('${p.id}', event)"></div>
+        <div class="photo-actions">
+          <button class="icon-btn" title="Remover" onclick="deletePhoto('${p.id}', event)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>
+          </button>
+        </div>
+        <div class="photo-info">
+          <div class="photo-name">${p.name}</div>
+          <div class="photo-meta">${kb} · ${dateStr}</div>
+        </div>
+      </div>`;
+  }).join('');
+
+  document.getElementById('grid-btn').classList.toggle('active', currentView === 'grid');
+  document.getElementById('list-btn').classList.toggle('active', currentView === 'list');
+  document.getElementById('delete-sel-btn').style.display = selectedIds.size > 0 ? 'flex' : 'none';
+}
+
+// ---- STATS ----
+function updateStats() {
+  const count = photos.length;
+  const totalBytes = photos.reduce((s, p) => s + p.size, 0);
+  const totalMB = totalBytes / 1024 / 1024;
+  const pct = Math.min((totalMB / MAX_STORAGE_MB) * 100, 100);
+
+  document.getElementById('header-count').textContent = `${count} foto${count !== 1 ? 's' : ''}`;
+  document.getElementById('photo-count').textContent = `${count} foto${count !== 1 ? 's' : ''}`;
+  document.getElementById('storage-fill').style.width = pct + '%';
+  document.getElementById('storage-used').textContent = totalMB < 1 ? (totalMB * 1024).toFixed(0) + ' KB' : totalMB.toFixed(1) + ' MB';
+}
+
+// ---- ACTIONS ----
+function toggleSelect(id, e) {
+  e.stopPropagation();
+  if (selectedIds.has(id)) selectedIds.delete(id);
+  else selectedIds.add(id);
+  renderGallery();
+}
+
+function deletePhoto(id, e) {
+  e.stopPropagation();
+  photos = photos.filter(p => p.id !== id);
+  selectedIds.delete(id);
+  DB.save(photos);
+  renderGallery();
+  updateStats();
+  toast('Foto removida.', 'success');
+}
+
+function deleteSelected() {
+  const n = selectedIds.size;
+  photos = photos.filter(p => !selectedIds.has(p.id));
+  selectedIds.clear();
+  DB.save(photos);
+  renderGallery();
+  updateStats();
+  toast(`${n} foto${n > 1 ? 's' : ''} removida${n > 1 ? 's' : ''}.`, 'success');
+}
+
+function setView(v) {
+  currentView = v;
+  const grid = document.getElementById('photo-grid');
+  grid.className = 'photo-grid' + (v === 'list' ? ' list-view' : '');
+  renderGallery();
+}
+
+function filterView(mode) {
+  filterMode = mode;
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  renderGallery();
+}
+
+// ---- MODAL ----
+function openModal(id) {
+  const p = photos.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('modal-title').textContent = p.name;
+  document.getElementById('modal-img').src = p.data;
+  document.getElementById('modal-size').textContent = p.size < 1024*1024 ? (p.size/1024).toFixed(0)+' KB' : (p.size/1024/1024).toFixed(1)+' MB';
+  document.getElementById('modal-date').textContent = new Date(p.date).toLocaleDateString('pt-BR', { weekday:'short', day:'2-digit', month:'long', year:'numeric' });
+  const dl = document.getElementById('modal-download');
+  dl.href = p.data;
+  dl.download = p.name;
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal(e) {
+  if (e.target.id === 'modal') document.getElementById('modal').classList.remove('open');
+}
+
+// ---- SEARCH ----
+document.getElementById('search-input').addEventListener('input', renderGallery);
+
+// ---- TOAST ----
+let toastTimer;
+function toast(msg, type = '') {
+  const el = document.getElementById('toast');
+  const spinner = document.getElementById('toast-spinner');
+  el.className = 'show ' + type;
+  document.getElementById('toast-msg').textContent = msg;
+  spinner.style.display = 'none';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// ---- START ----
+init();
+</script>
+</body>
+</html>
